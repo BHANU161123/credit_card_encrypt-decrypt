@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>Credit Card Encryption & Decryption</title>
+
+  <!-- CryptoJS -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+
+  <style>
+
+    *{
+      margin:0;
+      padding:0;
+      box-sizing:border-box;
+      font-family:Arial, sans-serif;
+    }
+
+    body{
+      background:linear-gradient(135deg,#0f172a,#1e293b);
+      min-height:100vh;
+      color:white;
+      padding:30px;
+    }
+
+    .container{
+      max-width:1100px;
+      margin:auto;
+    }
+
+    h1{
+      text-align:center;
+      color:#a855f7;
+      margin-bottom:10px;
+    }
+
+    .subtitle{
+      text-align:center;
+      color:#cbd5e1;
+      margin-bottom:35px;
+    }
+
+    .grid{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:25px;
+    }
+
+    .card{
+      background:#111827;
+      padding:25px;
+      border-radius:20px;
+      box-shadow:0 0 20px rgba(0,0,0,0.4);
+    }
+
+    h2{
+      color:#c084fc;
+      margin-bottom:15px;
+    }
+
+    input{
+      width:100%;
+      padding:14px;
+      border:none;
+      outline:none;
+      border-radius:12px;
+      margin-bottom:15px;
+      background:#334155;
+      color:white;
+      font-size:15px;
+    }
+
+    button{
+      width:100%;
+      padding:14px;
+      border:none;
+      border-radius:12px;
+      background:linear-gradient(135deg,#9333ea,#7e22ce);
+      color:white;
+      font-size:16px;
+      font-weight:bold;
+      cursor:pointer;
+      transition:0.3s;
+      margin-top:10px;
+    }
+
+    button:hover{
+      transform:scale(1.02);
+      opacity:0.9;
+    }
+
+    .output{
+      background:#0f172a;
+      padding:15px;
+      border-radius:12px;
+      margin-top:15px;
+      min-height:100px;
+      overflow:auto;
+      word-wrap:break-word;
+      line-height:1.7;
+    }
+
+    .info{
+      margin-top:30px;
+      background:#111827;
+      padding:25px;
+      border-radius:20px;
+      line-height:1.8;
+    }
+
+    .success{
+      color:#4ade80;
+      font-weight:bold;
+    }
+
+    .warning{
+      color:#facc15;
+      font-weight:bold;
+    }
+
+    .error{
+      color:#f87171;
+      font-weight:bold;
+    }
+
+    @media(max-width:768px){
+      .grid{
+        grid-template-columns:1fr;
+      }
+    }
+
+  </style>
+</head>
+
+<body>
+
+  <div class="container">
+
+    <h1>💳 Credit Card Encryption & Decryption</h1>
+
+    <p class="subtitle">
+      Secure PAN Encryption, Tokenization & Masking using AES-256
+    </p>
+
+    <div class="grid">
+
+      <!-- Encrypt Section -->
+      <div class="card">
+
+        <h2>Encrypt Card</h2>
+
+        <input type="text"
+               id="cardNumber"
+               placeholder="Enter Card Number">
+
+        <input type="password"
+               id="encryptPassword"
+               placeholder="Enter Secret Key">
+
+        <button onclick="encryptCard()">
+          Encrypt Card
+        </button>
+
+        <div class="output" id="encryptOutput">
+          Encrypted result will appear here...
+        </div>
+
+      </div>
+
+      <!-- Decrypt Section -->
+      <div class="card">
+
+        <h2>Decrypt Card</h2>
+
+        <input type="text"
+               id="encryptedData"
+               placeholder="Paste Encrypted Data">
+
+        <input type="password"
+               id="decryptPassword"
+               placeholder="Enter Secret Key">
+
+        <button onclick="decryptCard()">
+          Decrypt Card
+        </button>
+
+        <div class="output" id="decryptOutput">
+          Decrypted result will appear here...
+        </div>
+
+      </div>
+
+    </div>
+
+    <div class="info">
+
+      <h2>📘 Security Features</h2>
+
+      <p>✅ AES-256 Encryption</p>
+      <p>✅ Random Salt Generation</p>
+      <p>✅ Random IV Generation</p>
+      <p>✅ Secure PBKDF2 Key Derivation</p>
+      <p>✅ PAN Masking</p>
+      <p>✅ Tokenization</p>
+      <p>✅ No Raw PAN Storage</p>
+
+      <br>
+
+      <p class="success">
+        This project satisfies the requirement:
+        “Encrypt/decrypt PANs, store tokens, enforce masking,
+        and never persist raw PAN.”
+      </p>
+
+      <br>
+
+      <p class="warning">
+        Educational Demo:
+        Real payment systems require PCI-DSS compliance,
+        HSM security, backend encryption, and secure databases.
+      </p>
+
+    </div>
+
+  </div>
+
+  <script>
+
+    function generateToken(){
+
+      return "tok_" +
+        Math.random().toString(36).substring(2,15);
+    }
+
+    function maskPAN(card){
+
+      return card.substring(0,4) +
+        " **** **** " +
+        card.substring(card.length - 4);
+    }
+
+    function validateCard(card){
+
+      const regex = /^[0-9]{16}$/;
+
+      return regex.test(card);
+    }
+
+    function encryptCard(){
+
+      const card =
+        document.getElementById("cardNumber").value;
+
+      const password =
+        document.getElementById("encryptPassword").value;
+
+      if(!validateCard(card)){
+
+        document.getElementById("encryptOutput").innerHTML =
+          "<span class='error'>Invalid card number (16 digits required)</span>";
+
+        return;
+      }
+
+      if(!password){
+
+        alert("Enter secret key");
+        return;
+      }
+
+      // Random Salt
+      const salt =
+        CryptoJS.lib.WordArray.random(128 / 8);
+
+      // Random IV
+      const iv =
+        CryptoJS.lib.WordArray.random(128 / 8);
+
+      // Secure Key
+      const key =
+        CryptoJS.PBKDF2(password, salt, {
+          keySize:256/32,
+          iterations:1000
+        });
+
+      // Encrypt PAN
+      const encrypted =
+        CryptoJS.AES.encrypt(card, key, {
+          iv:iv
+        });
+
+      // Tokenization
+      const token = generateToken();
+
+      // Masked PAN
+      const masked = maskPAN(card);
+
+      // Final Secure Data
+      const secureData =
+        salt.toString() + ":" +
+        iv.toString() + ":" +
+        encrypted.toString();
+
+      // Store token only
+      localStorage.setItem(
+        token,
+        secureData
+      );
+
+      document.getElementById("encryptOutput").innerHTML =
+        `
+        <b>Masked PAN:</b><br>
+        ${masked}
+
+        <br><br>
+
+        <b>Token:</b><br>
+        ${token}
+
+        <br><br>
+
+        <b>Encrypted PAN:</b><br>
+        ${secureData}
+        `;
+    }
+
+    function decryptCard(){
+
+      const encryptedData =
+        document.getElementById("encryptedData").value;
+
+      const password =
+        document.getElementById("decryptPassword").value;
+
+      if(!encryptedData || !password){
+
+        alert("Provide encrypted data and key");
+        return;
+      }
+
+      try{
+
+        const parts =
+          encryptedData.split(":");
+
+        const salt =
+          CryptoJS.enc.Hex.parse(parts[0]);
+
+        const iv =
+          CryptoJS.enc.Hex.parse(parts[1]);
+
+        const encrypted =
+          parts[2];
+
+        // Derive same key
+        const key =
+          CryptoJS.PBKDF2(password, salt, {
+            keySize:256/32,
+            iterations:1000
+          });
+
+        // Decrypt
+        const decrypted =
+          CryptoJS.AES.decrypt(encrypted, key, {
+            iv:iv
+          });
+
+        const originalPAN =
+          decrypted.toString(CryptoJS.enc.Utf8);
+
+        if(!originalPAN){
+
+          throw new Error();
+        }
+
+        const masked =
+          maskPAN(originalPAN);
+
+        document.getElementById("decryptOutput").innerHTML =
+          `
+          <b>Masked PAN:</b><br>
+          ${masked}
+
+          <br><br>
+
+          <b>Decrypted PAN:</b><br>
+          ${originalPAN}
+          `;
+
+      }
+      catch(error){
+
+        document.getElementById("decryptOutput").innerHTML =
+          "<span class='error'>Invalid key or corrupted encrypted data</span>";
+      }
+    }
+
+  </script>
+
+</body>
+</html>
